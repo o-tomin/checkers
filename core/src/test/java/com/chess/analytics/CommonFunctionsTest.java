@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 import java.util.*;
 
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.*;
 
 
 public class CommonFunctionsTest {
@@ -116,7 +116,7 @@ public class CommonFunctionsTest {
                 Field.WHITE_FIGURE_RIGHT_VECTOR,
                 figureToPossibleStepCells);
 
-        assertEquals(figureToPossibleStepCells.get(whiteFigure), Collections.emptyList());
+        assertEquals(figureToPossibleStepCells.get(whiteFigure), null);
     }
 
     private static final byte[][] WHITE_FIGURE_CANT_GO_BACK_FIELD = {
@@ -137,7 +137,7 @@ public class CommonFunctionsTest {
                 Field.WHITE_FIGURE_RIGHT_VECTOR,
                 figureToPossibleStepCells);
 
-        assertEquals(figureToPossibleStepCells.get(whiteFigure), Collections.emptyList());
+        assertEquals(figureToPossibleStepCells.get(whiteFigure), null);
     }
 
     private static final byte[][] WHITE_FIGURE_CAN_ATTACK_BLACK_FIGURE_FORWARD_FIELD = {
@@ -361,7 +361,7 @@ public class CommonFunctionsTest {
                 Field.BLACK_FIGURE_RIGHT_VECTOR,
                 figureToPossibleStepCells);
 
-        assertEquals(figureToPossibleStepCells.get(whiteQueen),Collections.emptyList());
+        assertEquals(figureToPossibleStepCells.get(whiteQueen), null);
     }
 
     private static final byte[][] WHITE_QUEEN_CAN_ATTACK_BLACK_FIGURE_FIELD = {
@@ -490,5 +490,77 @@ public class CommonFunctionsTest {
         assertEquals(6, CommonFunctions.countValues(CELL_ASSOCIATION_MAP));
     }
 
+    private static final byte[][] FIGURE_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD = {
+            {1, 0, 1, 0, 1},
+            {0, 4, 0, 4, 0},
+            {1, 0, 2, 0, 1},
+            {0, 4, 0, 4, 0},
+            {1, 0, 1, 0, 1}
+    };
 
+    @Test
+    public void takeStockOfKillingBasedStepsFigureTest() throws Exception {
+        field.magicUpdate(FIGURE_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD);
+        Cell whiteFigure = new Cell(2, 2);
+        Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
+        possibleAttacks.put(whiteFigure, List.of(
+                new Cell(1, 1),
+                new Cell(3, 1),
+                new Cell(1, 3),
+                new Cell(3, 3)));
+        Map<Cell, List<Cell>> possibleSteps = new HashMap<>();
+        CommonFunctions.takeStockOfKillingBasedSteps(field,
+                possibleAttacks,
+                possibleSteps);
+        assertEqualsDeep(new HashMap<>() {
+            {put(whiteFigure, List.of(
+                    new Cell(0, 0),
+                    new Cell(4, 0),
+                    new Cell(0, 4),
+                    new Cell(4, 4)));}
+        }, possibleSteps);
+    }
+
+    private static final byte[][] QUEEN_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD = {
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 4, 0, 5, 0, 1, 0},
+            {0, 1, 0, 3, 0, 1, 0, 1},
+            {1, 0, 5, 0, 4, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 5}
+    };
+
+    @Test
+    public void takeStockOfKillingBasedStepsQueenTest() throws Exception {
+        field.magicUpdate(QUEEN_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD);
+        Cell whiteQueen = new Cell(3, 3);
+        Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
+        possibleAttacks.put(whiteQueen, List.of(
+                new Cell(2, 2),
+                new Cell(2, 4),
+                new Cell(4, 2),
+                new Cell(4, 4)));
+        Map<Cell, List<Cell>> possibleSteps = new HashMap<>();
+        CommonFunctions.takeStockOfKillingBasedSteps(field,
+                possibleAttacks,
+                possibleSteps);
+
+        List<Cell> stepsActual = possibleSteps.get(whiteQueen);
+        List<Cell> stepsExpected = new ArrayList<>(){
+            {
+                add(new Cell(0, 0));
+                add(new Cell(1, 1));
+                add(new Cell(0, 6));
+                add(new Cell(1, 5));
+                add(new Cell(6, 6));
+                add(new Cell(5, 5));
+                add(new Cell(6, 0));
+                add(new Cell(5, 1));
+            }
+        };
+        //todo: need to fix compareTo in Cell class
+        assertTrue(stepsActual.containsAll(stepsExpected));
+    }
 }

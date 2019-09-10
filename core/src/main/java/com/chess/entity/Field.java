@@ -90,6 +90,25 @@ public class Field {
         return Optional.of(new Cell(nextCellIndexes)).filter(this::isCellValid);
     }
 
+    public Cell calculateNextCell(Cell cell, Cell next) {
+        return new Cell(GameMath.calculateNextCellBasedOnTwoCells(cell.toIndexedCell(), next.toIndexedCell()));
+    }
+
+    public List<Cell> calculateNextCells(Cell killer, Cell victim) {
+        List<Cell> emptyCells = new ArrayList<>();
+        Cell previous = killer;
+        Cell next = victim;
+        do {
+            Cell tmp = next;
+            next = calculateNextCell(previous, next);
+            previous = tmp;
+            if (isBlackCell(next)) {
+                emptyCells.add(next);
+            }
+        } while (isBlackCell(next));
+        return emptyCells;
+    }
+
     public List<Cell> calculateInBetweenCells(Cell left, Cell right) {
         return Stream.ofNullable(
                 GameMath.calculateInBetweenCells(left.toIndexedCell(), right.toIndexedCell()))
@@ -230,6 +249,13 @@ public class Field {
 
     private void insertCode(int[] cell, byte code) {
         FIELD[cell[0]][cell[1]] = code;
+    }
+
+    private Optional<Cell> returnIfEmpty(Cell cell) {
+        if (isBlackCell(cell)) {
+            return Optional.of(cell);
+        }
+        return Optional.empty();
     }
 
     // ----------------------------------- common overrides -----------------------------------

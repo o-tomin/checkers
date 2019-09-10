@@ -47,11 +47,11 @@ public class Game {
                 .flatMap(List::stream)
                 .anyMatch(cell -> Objects.equals(cell, to))) {
             releasStep(from, to);
-        } else if (Optional.ofNullable(killerToVictimsMap.get(from))
-                .stream()
-                .flatMap(List::stream)
-                .anyMatch(cell -> Objects.equals(cell, to))) {
-            releasStep(from, to);
+        } else {
+            List<Cell> victims = killerToVictimsMap.get(from);
+            if (victims != null && !victims.isEmpty()) {
+
+            }
         }
 
 

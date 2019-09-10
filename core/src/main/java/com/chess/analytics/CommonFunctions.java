@@ -67,4 +67,23 @@ class CommonFunctions {
         killerToVictimsPossibleAttacks.putAll(possibleAttacks);
     }
 
+    static void takeStockOfKillingBasedSteps(Field field,
+                                             Map<Cell, List<Cell>> possibleAttacks,
+                                             Map<Cell, List<Cell>> possibleSteps) {
+        for(Cell killer : possibleAttacks.keySet()) {
+            List<Cell> victims = possibleAttacks.get(killer);
+            List<Cell> steps = possibleSteps.getOrDefault(killer, new ArrayList<>());
+            if (field.isWhiteFigure(killer) || field.isBlackFigure(killer)) {
+                victims.stream()
+                        .map(victim -> field.calculateNextCell(killer, victim))
+                        .forEach(steps::add);
+                possibleSteps.put(killer, steps);
+            } else {
+                victims.stream()
+                        .flatMap(victim -> field.calculateNextCells(killer, victim).stream())
+                        .forEach(steps::add);
+                possibleSteps.put(killer, steps);
+            }
+        }
+    }
 }

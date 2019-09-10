@@ -37,10 +37,10 @@ public class FieldStateAnalyzer {
             } else if (field.isBlackQueen(cell)) {
                 blackQueens.add(cell);
             } });
-        updateBlacksPossibleSteps();
-        updateWhitesPossibleSteps();
         updateWhitesPossibleAttacks();
         updateBlacksPossibleAttacks();
+        updateBlacksPossibleSteps();
+        updateWhitesPossibleSteps();
     }
 
     public void updateWhitesPossibleAttacks() {
@@ -77,12 +77,14 @@ public class FieldStateAnalyzer {
         whitesPossibleSteps.clear();
         whiteFigures.forEach(this::takeStockOfFigurePossibleSteps);
         whiteQueens.forEach(this::takeStockOfQueenPossibleSteps);
+        takeStockOfKillingBasedSteps(field, whitesPossibleAttacks, whitesPossibleSteps);
     }
 
     public void updateBlacksPossibleSteps() {
         blacksPossibleSteps.clear();
         blackFigures.forEach(this::takeStockOfFigurePossibleSteps);
         blackQueens.forEach(this::takeStockOfQueenPossibleSteps);
+        takeStockOfKillingBasedSteps(field, blacksPossibleAttacks, blacksPossibleSteps);
     }
 
     public int countWhites() {
