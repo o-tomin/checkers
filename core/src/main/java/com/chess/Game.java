@@ -5,12 +5,15 @@ import com.chess.entity.Cell;
 import com.chess.entity.Field;
 import com.chess.entity.GameContext;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 public class Game {
+
+    /**
+     * Siberian checkers
+     */
 
     private final GameContext context;
 
@@ -33,33 +36,164 @@ public class Game {
         return new Game(context);
     }
 
-    //todo: in progress
-    public void go(Cell from, Cell to) {
-        FieldStateAnalyzer analyzer = context.getStateAnalyzer();
-        Map<Cell, List<Cell>> cellToStepsMap = isWhitesTurn() ?
-                analyzer.getWhitesPossibleSteps() : analyzer.getBlacksPossibleSteps();
+    public GameContext go(Cell from, Cell to) throws Exception {
+        // Check if step is available with preprocessor
+        if (!getStepsFor(from).contains(to)) {
+            return context;
+        }
+        context.getField().moveFigureToEmptyBlackCell(from, to);
 
-        Map<Cell, List<Cell>> killerToVictimsMap = isWhitesTurn() ?
-                analyzer.getWhitesPossibleAttacks() : analyzer.getBlacksPossibleAttacks();
+        // Post process results
+        // If figure has victims it should kill at least one of them
+        List<Cell> victims = getVictimsFor(from);
+        boolean isShouldToPunish = false;
+        boolean isKilledFigureDuringStep = false;
+        if (!victims.isEmpty()) {
+            for (Cell victim : victims) {
+                if (context.getField().isSequential(from, victim, to)) {
+                    isKilledFigureDuringStep = true;
+                    context.getField().removeFigure(victim);
+                    break;
+                }
+            }
 
-        if (Optional.ofNullable(cellToStepsMap.get(from))
-                .stream()
-                .flatMap(List::stream)
-                .anyMatch(cell -> Objects.equals(cell, to))) {
-            releasStep(from, to);
-        } else {
-            List<Cell> victims = killerToVictimsMap.get(from);
-            if (victims != null && !victims.isEmpty()) {
+            // If step is released, but none of expected victims killed player should be punished
+            if (!isKilledFigureDuringStep) {
+                isShouldToPunish = true;
+            }
+        } else if (!isVictimsEmpty()){
+            // If there are victims it means that player had to kill at least one, but he did not: remove one of his
+            // killers.
+            isShouldToPunish = true;
+        }
 
+        // If figure achieved opposite end of the board it should be turned to queen
+        boolean isTurnedToQueen = false;
+        if(!(context.getField().isWhiteQueen(to) && context.getField().isBlackQueen(to))
+                && context.getField().isFigureOnOppositeEdge(to)) {
+            context.getField().switchFigureToQueen(to);
+            isTurnedToQueen = true;
+        }
+
+        boolean isPunished = false;
+        // If punishment required then all killers must be removed
+        if (isShouldToPunish) {
+            getKillerToVictimsMap().keySet()
+                    .forEach(cell -> {
+                        if (cell.equals(from)) {
+                            cell = to;
+                        }
+                        context.getField().removeFigure(cell);
+                    });
+            isShouldToPunish = false;
+            isPunished = true;
+        }
+
+        // Update preprocessor
+        context.getStateAnalyzer().updateDataForAnalysis();
+
+        // Punish player if he made kill with queen and did not placed it beside next victim
+        // todo:
+        if (isQueen(to) && isKilledFigureDuringStep) {
+            for (Cell validToPlace : getStepsFor(from)) {
+                if(!validToPlace.equals(to) && context.getStateAnalyzer().isGoodPlaceForKilling(to, validToPlace, isWhitesTurn())) {
+                    isShouldToPunish = true;
+                }
             }
         }
 
+        if (isShouldToPunish) {
+            context.getField().removeFigure(to);
+            getKillerToVictimsMap().remove(to);
+            isShouldToPunish = false;
+            isPunished = true;
+        }
 
+        // if figure was switched to queen remove it's victims.
+        if (isTurnedToQueen) {
+            getKillerToVictimsMap().remove(to);
+        }
+
+        // If player has new victims for figure he made step with & was not punished do not switch turn
+        if (!isPunished && !getVictimsFor(to).isEmpty()) {
+            return context;
+        }
+
+        //Check if game ended
+        if (isWhitesTurn()) {
+            if (context.getStateAnalyzer().countBlacks() > 0 ) {
+                if (context.getStateAnalyzer().countBlacksPossibleSteps() == 0) {
+                    context.setBlackInOuthouse(true);
+                    context.setWhitesWin(true);
+                    return context;
+                } else {
+                    context.setWhitesTurn(!isWhitesTurn());
+                    return context;
+                }
+            } else {
+                context.setWhitesWin(true);
+                return context;
+            }
+        } else {
+            if (context.getStateAnalyzer().countWhites() > 0) {
+                if (context.getStateAnalyzer().countWhitesPossibleSteps() == 0) {
+                    context.setWhitesInOuthouse(true);
+                    context.setBlacksWin(true);
+                } else {
+                    context.setWhitesTurn(!isWhitesTurn());
+                    return context;
+                }
+            } else {
+                context.setBlacksWin(true);
+                return context;
+            }
+        }
+
+        return context;
+    }
+
+
+
+    private boolean isEnemyHasFigures() {
+        return isWhitesTurn() ? context.getField().getStateAnalyzer().countWhites() > 0 :
+                context.getField().getStateAnalyzer().countBlacks() > 0;
+    }
+
+    private boolean isVictimsEmpty() {
+        return getKillerToVictimsMap().isEmpty();
+    }
+
+    private boolean isQueen(Cell cell) {
+        return isWhitesTurn() ? context.getField().isWhiteQueen(cell) : context.getField().isBlackQueen(cell);
+    }
+
+    private List<Cell> getStepsFor(Cell cell) {
+        return getPossibleStepsMap().getOrDefault(cell, new ArrayList<>());
+    }
+
+    private List<Cell> getVictimsFor(Cell killer) {
+        return getKillerToVictimsMap().getOrDefault(killer, new ArrayList<>());
+    }
+
+    private Map<Cell, List<Cell>> getKillerToVictimsMap() {
+        return isWhitesTurn() ? getWhitesPossibleAttacks() : getBlacksPossibleAttacks();
+    }
+
+    private Map<Cell, List<Cell>> getPossibleStepsMap() {
+        return isWhitesTurn() ? getWhitesPossibleSteps() : getBlacksPossibleSteps();
     }
 
     //booleans
     public boolean isWhitesTurn() {
         return context.isWhitesTurn();
+    }
+
+    public boolean isWhitesWin() {
+        return context.isWhitesWin();
+    }
+
+    public boolean isBlacksWin() {
+        return context.isBlacksWin();
     }
 
     // getters
@@ -103,9 +237,4 @@ public class Game {
         return context.getStateAnalyzer().getBlackQueens();
     }
 
-    private void releasStep(Cell from, Cell to) {
-        context.getField().moveFigureToEmptyBlackCell(from, to);
-        context.setWhitesTurn(!isWhitesTurn());
-        context.getStateAnalyzer().updateDataForAnalysis();
-    }
 }

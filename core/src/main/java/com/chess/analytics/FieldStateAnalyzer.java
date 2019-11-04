@@ -210,4 +210,26 @@ public class FieldStateAnalyzer {
         return field.isBlackFigure(cell) || field.isBlackQueen(cell);
     }
 
+    public boolean isGoodPlaceForKilling(Cell real, Cell imagining, boolean isWhiteQueen) {
+        if (!field.isBlackCell(imagining)) {
+            return false;
+        }
+        Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
+        field.moveFigureToEmptyBlackCell(real, imagining);
+        if (!isWhiteQueen) {
+            List<Cell> whites = Stream.of(whiteFigures, whiteQueens)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            takeStockOfPossibleAttacks(imagining, whites, this::isReachableEnemyForBlackQueen,
+                    this::isAttackPossible, possibleAttacks);
+        } else {
+            List<Cell> blacks = Stream.of(blackFigures, blackQueens)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            takeStockOfPossibleAttacks(imagining, blacks, this::isReachableEnemyForWhiteQueen,
+                    this::isAttackPossible, possibleAttacks);
+        }
+        field.moveFigureToEmptyBlackCell(imagining, real);
+        return !possibleAttacks.isEmpty();
+    }
 }

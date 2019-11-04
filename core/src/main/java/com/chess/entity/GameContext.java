@@ -8,6 +8,10 @@ public class GameContext implements Serializable {
     private Field field;
     private FieldStateAnalyzer stateAnalyzer;
     private boolean isWhitesTurn;
+    private boolean isWhitesInOuthouse;
+    private boolean isWhitesWin;
+    private boolean isBlacksInOuthouse;
+    private boolean isBlacksWin;
 
     // setters
     public void setField(Field field) {
@@ -36,4 +40,35 @@ public class GameContext implements Serializable {
         return stateAnalyzer;
     }
 
+    public void setWhitesInOuthouse(boolean isIn) {
+        isWhitesInOuthouse = isIn;
+    }
+
+    public boolean isWhitesInOuthouse() {
+        return isWhitesInOuthouse;
+    }
+
+    public void setWhitesWin(boolean isWhitesWin) {
+        this.isWhitesWin = isWhitesWin;
+    }
+
+    public boolean isWhitesWin() {
+        return isWhitesWin;
+    }
+
+    public void setBlackInOuthouse(boolean isIn) {
+        isBlacksInOuthouse = isIn;
+    }
+
+    public boolean isBlacksInOuthouse() {
+        return isBlacksInOuthouse;
+    }
+
+    public void setBlacksWin(boolean isBlacksWin) {
+        this.isBlacksWin = true;
+    }
+
+    public boolean isBlacksWin() {
+        return isBlacksWin;
+    }
 }

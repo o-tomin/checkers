@@ -1,6 +1,6 @@
 package com.chess.analytics;
 
-import com.chess.analytics.GameMath;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
@@ -15,8 +15,15 @@ public class GameMathTest {
     private static final int[] SOME_CELL = {2, 1};
 
     private static final int[] ONE_ONE_CELL = {1, 1};
+    private static final int[] FOUR_FOUR_CALL = {4, 4};
+    private static final int[] FIVE_FIVE_CELL = {5, 5};
+    private static final int[] SIX_SIX_CELL = {6, 6};
     private static final int[] SEVEN_SEVEN_CELL = {7, 7};
+    private static final int[] SIX_FOUR_CELL = {6, 4};
     private static final int[] SEVEN_ONE_CELL = {7, 1};
+    private static final int[] TWO_EIGHT_CELL = {2, 8};
+    private static final int[] FOUR_SIX_CELL = {4, 6};
+    private static final int[] EIGHT_TWO_CELL = {8, 2};
     private static final int[] ONE_SEVEN_CELL = {1, 7};
 
     @Test
@@ -51,6 +58,32 @@ public class GameMathTest {
     @Test
     public void isOnOneDiagonalFalseTest() {
         assertFalse(GameMath.isOnOneDiagonal(SOME_CELL, THIRD_CELL));
+    }
+
+    @Test
+    public void isSequentialTest() {
+        Assert.assertTrue(GameMath.isSequential(ONE_ONE_CELL,       FIVE_FIVE_CELL,     SIX_SIX_CELL));
+        Assert.assertTrue(GameMath.isSequential(FOUR_FOUR_CALL,     FIVE_FIVE_CELL,     SIX_SIX_CELL));
+        Assert.assertTrue(GameMath.isSequential(FIVE_FIVE_CELL,     SIX_SIX_CELL,       SEVEN_SEVEN_CELL));
+
+        Assert.assertTrue(GameMath.isSequential(SIX_SIX_CELL,       FIVE_FIVE_CELL,     ONE_ONE_CELL));
+        Assert.assertTrue(GameMath.isSequential(SIX_SIX_CELL,       FIVE_FIVE_CELL,     FOUR_FOUR_CALL));
+        Assert.assertTrue(GameMath.isSequential(SEVEN_SEVEN_CELL,   SIX_SIX_CELL,       FIVE_FIVE_CELL));
+
+        Assert.assertTrue(GameMath.isSequential(SIX_FOUR_CELL,      FIVE_FIVE_CELL,     FOUR_SIX_CELL));
+        Assert.assertTrue(GameMath.isSequential(EIGHT_TWO_CELL,     SIX_FOUR_CELL,      FOUR_SIX_CELL));
+        Assert.assertTrue(GameMath.isSequential(SIX_FOUR_CELL,      FOUR_SIX_CELL,      TWO_EIGHT_CELL));
+
+        Assert.assertTrue(GameMath.isSequential(FOUR_SIX_CELL,      FIVE_FIVE_CELL,     SIX_FOUR_CELL));
+        Assert.assertTrue(GameMath.isSequential(FOUR_SIX_CELL,      SIX_FOUR_CELL,      EIGHT_TWO_CELL));
+        Assert.assertTrue(GameMath.isSequential(TWO_EIGHT_CELL,     FOUR_SIX_CELL,      SIX_FOUR_CELL));
+
+        Assert.assertFalse(GameMath.isSequential(ONE_ONE_CELL,      SIX_SIX_CELL,       FIVE_FIVE_CELL));
+        Assert.assertFalse(GameMath.isSequential(SIX_SIX_CELL,      ONE_ONE_CELL,       FIVE_FIVE_CELL));
+        Assert.assertFalse(GameMath.isSequential(SIX_FOUR_CELL,     FOUR_SIX_CELL,      FIVE_FIVE_CELL));
+        Assert.assertFalse(GameMath.isSequential(FOUR_SIX_CELL,     SIX_FOUR_CELL,      FIVE_FIVE_CELL));
+
+        Assert.assertFalse(GameMath.isSequential(ONE_SEVEN_CELL,    SIX_FOUR_CELL,      SIX_SIX_CELL));
     }
 
     private static int[][] array(String arrayString) {

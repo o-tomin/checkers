@@ -28,12 +28,19 @@ public class GameMath {
     }
 
     // public boolean methods
-    public static boolean isOnOneDiagonal(int[] first, int[] second) {
-        return isDiagonalVector(vector(first, second));
+    public static boolean isOnOneDiagonal(int[] first, int[] last) {
+        return isDiagonalVector(vector(first, last));
     }
 
-    private static boolean isDiagonalVector(int[] vector) {
-        return Math.abs(vector[0]) == Math.abs(vector[1]);
+    public static boolean isSequential(int[] first, int[] medium, int[] last) {
+        if (isOnOneDiagonal(first, medium) && isOnOneDiagonal(medium, last)) {
+            int[] firstToMediumVector = vector(first, medium);
+            int[] firstToLastVector = vector(first, last);
+            return isUnidirectionalVectors(firstToMediumVector, firstToLastVector) &&
+                    isFirstVectorLongest(firstToLastVector, firstToMediumVector);
+        }
+
+        return false;
     }
 
     // private methods
@@ -47,5 +54,18 @@ public class GameMath {
         return new int[] {lineStep, cellStep};
     }
 
+    // private boolean
+    private static boolean isUnidirectionalVectors(int[] firstVector, int[] lastVector) {
+        int[] firstVectorOrt = ortVector(firstVector);
+        int[] lastVectorOrt = ortVector(lastVector);
+        return firstVectorOrt[0] == lastVectorOrt[0] && firstVectorOrt[1] == lastVectorOrt[1];
+    }
 
+    private static boolean isFirstVectorLongest(int[] firstVector, int[] secondVector) {
+        return Math.abs(firstVector[0]) > Math.abs(secondVector[0]) && Math.abs(firstVector[1]) > Math.abs(secondVector[1]);
+    }
+
+    private static boolean isDiagonalVector(int[] vector) {
+        return Math.abs(vector[0]) == Math.abs(vector[1]);
+    }
 }

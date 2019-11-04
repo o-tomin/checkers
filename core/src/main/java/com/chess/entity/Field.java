@@ -128,9 +128,15 @@ public class Field {
     // Must be refactored good before using in production!!!
     @Deprecated
     public void magicUpdate(byte[][] newField) throws Exception {
+        byte[][] newFieldCopy = new byte[newField.length][newField[0].length];
+        for (int i = 0; i < newField.length; i++) {
+            for (int j = 0; j < newField[i].length; j++) {
+                newFieldCopy[i][j] = newField[i][j];
+            }
+        }
         java.lang.reflect.Field field = Field.class.getDeclaredField("FIELD");
         field.setAccessible(true);
-        field.set(this, newField);
+        field.set(this, newFieldCopy);
     }
 
     // - public static methods
@@ -208,6 +214,13 @@ public class Field {
         return GameMath.isOnOneDiagonal(first.toIndexedCell(), second.toIndexedCell());
     }
 
+    public boolean isSequential(@NotNull Cell first, @NotNull Cell medium, @NotNull Cell last) {
+        if (isCellValid(first) && isCellValid(medium) && isCellValid(last)) {
+            return GameMath.isSequential(first.toIndexedCell(), medium.toIndexedCell(), last.toIndexedCell());
+        }
+        return false;
+    }
+
     public boolean isCloseTo(@NotNull Cell first, @NotNull Cell second) {
         return first.isCloseTo(second);
     }
@@ -225,6 +238,25 @@ public class Field {
     }
 
     private char mapFigureCodeToConsoleChar(int line, int cell) throws RuntimeException {
+        switch (FIELD[line][cell]) {
+            case WHITE_CELL_CODE:
+                return WHITE_CELL_CHAR;
+            case BLACK_CELL_CODE:
+                return BLACK_CELL_CHAR;
+            case WHITE_FIGURE_CODE:
+                return WHITE_FIGURE_CHAR;
+            case BLACK_FIGURE_CODE:
+                return BLACK_FIGURE_CHAR;
+            case WHITE_QUEEN_CODE:
+                return WHITE_QUEEN_CHAR;
+            case BLACK_QUEEN_CODE:
+                return BLACK_QUEEN_CHAR;
+        }
+
+        throw new RuntimeException("Bad char to map: " + FIELD[line][cell]);
+    }
+
+    private char mapFigureCodeToConsoleChar(byte[][] FIELD, int line, int cell) throws RuntimeException {
         switch (FIELD[line][cell]) {
             case WHITE_CELL_CODE:
                 return WHITE_CELL_CHAR;
@@ -271,6 +303,28 @@ public class Field {
                 }
 
                 fieldString.append(mapFigureCodeToConsoleChar(line, cell)).append(' ');
+
+                if (cell == FIELD[0].length - 1) {
+                    fieldString.append(LETTERS[line]);
+                }
+            }
+        }
+        fieldString.append("\n");
+        fieldString.append(NUMBERS);
+        return fieldString.toString();
+    }
+
+    public String toString(byte[][] FIELD) {
+        StringBuilder fieldString = new StringBuilder();
+        fieldString.append(NUMBERS);
+        for (int line = 0; line < FIELD.length; line++) {
+            for (int cell = 0; cell < FIELD[0].length; cell++) {
+                if (cell == 0) {
+                    fieldString.append("\n");
+                    fieldString.append(LETTERS[line]).append(' ');
+                }
+
+                fieldString.append(mapFigureCodeToConsoleChar(FIELD, line, cell)).append(' ');
 
                 if (cell == FIELD[0].length - 1) {
                     fieldString.append(LETTERS[line]);
