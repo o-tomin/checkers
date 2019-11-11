@@ -3,8 +3,11 @@ package com.chess.analytics;
 import com.chess.entity.Cell;
 import com.chess.entity.Field;
 import com.chess.util.BiPredicateExtension;
+import com.chess.util.TriplePredicate;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class CommonFunctions {
 
@@ -69,7 +72,8 @@ class CommonFunctions {
 
     static void takeStockOfKillingBasedSteps(Field field,
                                              Map<Cell, List<Cell>> possibleAttacks,
-                                             Map<Cell, List<Cell>> possibleSteps) {
+                                             Map<Cell, List<Cell>> possibleSteps,
+                                             TriplePredicate<Cell, Cell, Cell> isGoodForNextQueenAttack) {
         for(Cell killer : possibleAttacks.keySet()) {
             List<Cell> victims = possibleAttacks.get(killer);
             List<Cell> steps = possibleSteps.getOrDefault(killer, new ArrayList<>());
@@ -79,9 +83,13 @@ class CommonFunctions {
                         .forEach(steps::add);
                 possibleSteps.put(killer, steps);
             } else {
-                victims.stream()
-                        .flatMap(victim -> field.calculateNextCells(killer, victim).stream())
-                        .forEach(steps::add);
+                Map<Cell, List<Cell>> victimsToPossibleStepsAfterKilling =  victims.stream()
+                        .collect(Collectors.toMap(Function.identity(), victim -> field.calculateNextCells(killer, victim)));
+                victimsToPossibleStepsAfterKilling.forEach((victim, blackCells) ->
+                    blackCells.stream()
+                            .filter(blackCell -> isGoodForNextQueenAttack.test(killer, victim, blackCell))
+                            .forEach(steps::add)
+                );
                 possibleSteps.put(killer, steps);
             }
         }

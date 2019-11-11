@@ -1,12 +1,29 @@
 package com.chess.entity;
 
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
 public class FieldTest {
+    private static final byte[][] TEST_FIELD = {
+           //1  2  3  4  5  6  7  8
+            {1, 0, 1, 0, 1, 0, 1, 0}, //H
+            {0, 1, 0, 1, 0, 1, 0, 1}, //G
+            {1, 0, 1, 0, 1, 0, 1, 0}, //F
+            {0, 1, 0, 3, 0, 1, 0, 1}, //E
+            {1, 0, 1, 0, 1, 0, 1, 0}, //D
+            {0, 1, 0, 1, 0, 1, 0, 1}, //C
+            {1, 0, 1, 0, 1, 0, 4, 0}, //B
+            {0, 1, 0, 1, 0, 1, 0, 1}};//A
+           //1  2  3  4  5  6  7  8
+    private static final String WHITE_QUEEN_TEST_FIELD_COORDINATES = "E, 4";
+    private static final String BLACK_FIGURE_TEST_FIELD_COORDINATES = "B, 7";
+
     private static final String WHITE_FIGURE_INITIAL_COORDINATES = "F, 3";
     private static final String BLACK_FIELD_INITIAL_COORDINATES_D4 = "E, 4";
     private static final String BLACK_FIELD_INITIAL_COORDINATES_F4 = "G, 4";
@@ -128,6 +145,35 @@ public class FieldTest {
     public void isFigureTest() {
         assertTrue(field.isFigure(blackFigureCell));
         assertFalse(field.isFigure(blackFieldCellB5));
+    }
+
+    private static final byte[][] RUN_ON_IMAGINING_FIELD_TO_VERIFY =  {
+           //1  2  3  4  5  6  7  8
+            {1, 0, 1, 0, 1, 0, 1, 0}, //H
+            {0, 1, 0, 1, 0, 1, 0, 1}, //G
+            {1, 0, 1, 0, 1, 0, 1, 0}, //F
+            {0, 1, 0, 4, 0, 1, 0, 1}, //E
+            {1, 0, 1, 0, 1, 0, 1, 0}, //D
+            {0, 1, 0, 1, 0, 1, 0, 1}, //C
+            {1, 0, 1, 0, 1, 0, 4, 0}, //B
+            {0, 1, 0, 1, 0, 1, 0, 1}};//A
+           //1  2  3  4  5  6  7  8
+
+    @Test
+    public void runOnImaginingFieldTest() throws Exception {
+        field.magicUpdate(TEST_FIELD);
+        Cell whiteQueen = Cell.fromString(WHITE_QUEEN_TEST_FIELD_COORDINATES);
+        Cell blackFigure = Cell.fromString(BLACK_FIGURE_TEST_FIELD_COORDINATES);
+        Object toReturn = new Object();
+        Object returned = field.runOnImaginingField(whiteQueen, blackFigure,
+            () -> {
+                Assert.assertTrue(field.isBlackFigure(whiteQueen));
+                Assert.assertTrue(field.isBlackFigure(blackFigure));
+                Assert.assertTrue(Arrays.deepEquals(field.cloneField(), RUN_ON_IMAGINING_FIELD_TO_VERIFY));
+                return toReturn;
+            });
+        Assert.assertEquals(returned, toReturn);
+        Assert.assertTrue(Arrays.deepEquals(field.cloneField(), TEST_FIELD));
     }
 
     private static Cell configureWhiteFigureMock(Field fieldSpy, Cell cellMock) {

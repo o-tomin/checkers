@@ -499,7 +499,7 @@ public class CommonFunctionsTest {
     };
 
     @Test
-    public void takeStockOfKillingBasedStepsFigureTest() throws Exception {
+    public void takeStockOfKillingBasedStepsFigureKillerTest() throws Exception {
         field.magicUpdate(FIGURE_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD);
         Cell whiteFigure = new Cell(2, 2);
         Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
@@ -511,7 +511,8 @@ public class CommonFunctionsTest {
         Map<Cell, List<Cell>> possibleSteps = new HashMap<>();
         CommonFunctions.takeStockOfKillingBasedSteps(field,
                 possibleAttacks,
-                possibleSteps);
+                possibleSteps,
+                analyzer::isGoodForNextQueenAttack);
         assertEqualsDeep(new HashMap<>() {
             {put(whiteFigure, List.of(
                     new Cell(0, 0),
@@ -533,8 +534,8 @@ public class CommonFunctionsTest {
     };
 
     @Test
-    public void takeStockOfKillingBasedStepsQueenTest() throws Exception {
-        field.magicUpdate(QUEEN_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD);
+    public void takeStockOfKillingBasedStepsQueenKillerTest() throws Exception {
+        field.magicUpdate(QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT);
         Cell whiteQueen = new Cell(3, 3);
         Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
         possibleAttacks.put(whiteQueen, List.of(
@@ -545,7 +546,8 @@ public class CommonFunctionsTest {
         Map<Cell, List<Cell>> possibleSteps = new HashMap<>();
         CommonFunctions.takeStockOfKillingBasedSteps(field,
                 possibleAttacks,
-                possibleSteps);
+                possibleSteps,
+                analyzer::isGoodForNextQueenAttack);
 
         List<Cell> stepsActual = possibleSteps.get(whiteQueen);
         List<Cell> stepsExpected = new ArrayList<>(){
@@ -563,4 +565,56 @@ public class CommonFunctionsTest {
         //todo: need to fix compareTo in Cell class
         assertTrue(stepsActual.containsAll(stepsExpected));
     }
+
+    private static final byte[][] QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT = {
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 5, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 4, 0, 4, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 3, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1}
+    };
+    //todo:
+    @Test
+    public void takeStockOfKillingBasedStepsQueenKillerStepToCorrectCellTest() throws Exception {
+        field.magicUpdate(QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT);
+        Cell whiteQueen = new Cell(6, 6);
+        Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
+        possibleAttacks.put(whiteQueen, List.of(
+                new Cell(4, 4)));
+        Map<Cell, List<Cell>> possibleSteps = new HashMap<>();
+        CommonFunctions.takeStockOfKillingBasedSteps(field,
+                possibleAttacks,
+                possibleSteps,
+                analyzer::isGoodForNextQueenAttack);
+
+        List<Cell> stepsActual = possibleSteps.get(whiteQueen);
+        List<Cell> stepsExpected = new ArrayList<>(){
+            {
+                add(new Cell(0, 0));
+                add(new Cell(1, 1));
+                add(new Cell(0, 6));
+                add(new Cell(1, 5));
+                add(new Cell(6, 6));
+                add(new Cell(5, 5));
+                add(new Cell(6, 0));
+                add(new Cell(5, 1));
+            }
+        };
+        //todo: need to fix compareTo in Cell class
+        assertTrue(stepsActual.containsAll(stepsExpected));
+    }
+
+    private static final byte[][] QUEEN_SHOULD_STEP_ON_ANY_CELL_AFTER_KILLING_IF_NO_NEW_VICTIMS_PRESENT = {
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 4, 0, 5, 0, 1, 0},
+            {0, 1, 0, 3, 0, 1, 0, 1},
+            {1, 0, 5, 0, 4, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 1, 0, 1, 0},
+            {0, 1, 0, 1, 0, 1, 0, 5}
+    };
 }

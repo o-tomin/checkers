@@ -92,16 +92,6 @@ public class Game {
         // Update preprocessor
         context.getStateAnalyzer().updateDataForAnalysis();
 
-        // Punish player if he made kill with queen and did not placed it beside next victim
-        // todo:
-        if (isQueen(to) && isKilledFigureDuringStep) {
-            for (Cell validToPlace : getStepsFor(from)) {
-                if(!validToPlace.equals(to) && context.getStateAnalyzer().isGoodPlaceForKilling(to, validToPlace, isWhitesTurn())) {
-                    isShouldToPunish = true;
-                }
-            }
-        }
-
         if (isShouldToPunish) {
             context.getField().removeFigure(to);
             getKillerToVictimsMap().remove(to);

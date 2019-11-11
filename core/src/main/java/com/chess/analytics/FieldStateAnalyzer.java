@@ -77,14 +77,14 @@ public class FieldStateAnalyzer {
         whitesPossibleSteps.clear();
         whiteFigures.forEach(this::takeStockOfFigurePossibleSteps);
         whiteQueens.forEach(this::takeStockOfQueenPossibleSteps);
-        takeStockOfKillingBasedSteps(field, whitesPossibleAttacks, whitesPossibleSteps);
+        takeStockOfKillingBasedSteps(field, whitesPossibleAttacks, whitesPossibleSteps, this::isGoodForNextQueenAttack);
     }
 
     public void updateBlacksPossibleSteps() {
         blacksPossibleSteps.clear();
         blackFigures.forEach(this::takeStockOfFigurePossibleSteps);
         blackQueens.forEach(this::takeStockOfQueenPossibleSteps);
-        takeStockOfKillingBasedSteps(field, blacksPossibleAttacks, blacksPossibleSteps);
+        takeStockOfKillingBasedSteps(field, blacksPossibleAttacks, blacksPossibleSteps, this::isGoodForNextQueenAttack);
     }
 
     public int countWhites() {
@@ -210,26 +210,24 @@ public class FieldStateAnalyzer {
         return field.isBlackFigure(cell) || field.isBlackQueen(cell);
     }
 
-    public boolean isGoodPlaceForKilling(Cell real, Cell imagining, boolean isWhiteQueen) {
-        if (!field.isBlackCell(imagining)) {
-            return false;
-        }
-        Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
-        field.moveFigureToEmptyBlackCell(real, imagining);
-        if (!isWhiteQueen) {
-            List<Cell> whites = Stream.of(whiteFigures, whiteQueens)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            takeStockOfPossibleAttacks(imagining, whites, this::isReachableEnemyForBlackQueen,
-                    this::isAttackPossible, possibleAttacks);
+    boolean isGoodForNextQueenAttack(Cell killer, Cell victim, Cell validCellToGo) {
+        return field.runOnImaginingField(validCellToGo, killer,
+                () -> isGoodForNextQueenAttackCommand(validCellToGo, victim));
+    }
+
+    private boolean isGoodForNextQueenAttackCommand(Cell queen, Cell victimToIgnore) {
+        Map<Cell, List<Cell>> possibleAttacksMap = new HashMap<>();
+        if (field.isWhiteQueen(queen)) {
+            List<Cell> blackFiguresCopy = new ArrayList<>(blackFigures);
+            blackFiguresCopy.remove(victimToIgnore);
+            takeStockOfPossibleAttacks(queen, blackFiguresCopy, this::isReachableEnemyForWhiteQueen,
+                    this::isAttackPossible, possibleAttacksMap);
         } else {
-            List<Cell> blacks = Stream.of(blackFigures, blackQueens)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            takeStockOfPossibleAttacks(imagining, blacks, this::isReachableEnemyForWhiteQueen,
-                    this::isAttackPossible, possibleAttacks);
+            List<Cell> whiteFiguresCopy = new ArrayList<>(whiteFigures);
+            whiteFiguresCopy.remove(victimToIgnore);
+            takeStockOfPossibleAttacks(queen, whiteFiguresCopy, this::isReachableEnemyForBlackQueen,
+                    this::isAttackPossible, possibleAttacksMap);
         }
-        field.moveFigureToEmptyBlackCell(imagining, real);
-        return !possibleAttacks.isEmpty();
+        return possibleAttacksMap.isEmpty();
     }
 }

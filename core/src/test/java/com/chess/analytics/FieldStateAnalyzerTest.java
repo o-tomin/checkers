@@ -64,7 +64,17 @@ public class FieldStateAnalyzerTest {
     @Test
     public void updateWhitesPossibleAttacksTest() throws Exception {
         field.magicUpdate(UPDATE_WHITES_POSSIBLE_ATTACKS_TEST_FIELD);
-        analyzer.updateDataForAnalysis();
+        field.forEachCell(cell -> {
+            if (field.isWhiteFigure(cell)) {
+                analyzer.getWhiteFigures().add(cell);
+            } else if (field.isWhiteQueen(cell)) {
+                analyzer.getWhiteQueens().add(cell);
+            } else if (field.isBlackFigure(cell)) {
+                analyzer.getBlackFigures().add(cell);
+            } else if (field.isBlackQueen(cell)) {
+                analyzer.getBlackQueens().add(cell);
+            }
+        });
         analyzer.updateWhitesPossibleAttacks();
         assertEquals(analyzer.getWhitesPossibleAttacks(),
                 new HashMap<Cell, List<Cell>>() {
@@ -93,7 +103,16 @@ public class FieldStateAnalyzerTest {
     @Test
     public void updateBlacksPossibleAttacksTest() throws Exception {
         field.magicUpdate(UPDATE_BLACKS_POSSIBLE_ATTACKS_TEST_FIELD);
-        analyzer.updateDataForAnalysis();
+        field.forEachCell(cell -> {
+            if (field.isWhiteFigure(cell)) {
+                analyzer.getWhiteFigures().add(cell);
+            } else if (field.isWhiteQueen(cell)) {
+                analyzer.getWhiteQueens().add(cell);
+            } else if (field.isBlackFigure(cell)) {
+                analyzer.getBlackFigures().add(cell);
+            } else if (field.isBlackQueen(cell)) {
+                analyzer.getBlackQueens().add(cell);
+            } });
         analyzer.updateBlacksPossibleAttacks();
         assertEquals(analyzer.getBlacksPossibleAttacks(),
                 new HashMap<Cell, List<Cell>>() {
@@ -115,34 +134,5 @@ public class FieldStateAnalyzerTest {
                                 Cell.fromString("G, 2"), Cell.fromString("E, 2")));
                     }
                 });
-    }
-
-    private static final byte[][] DIFFERENT_KILLING_OPPORTUNITIES_FIELD = new byte[][]{
-           //1  2  3  4  5  6  7  8
-            {1, 0, 1, 0, 1, 0, 1, 0}, //H
-            {0, 1, 0, 1, 0, 5, 0, 1}, //G
-            {1, 0, 2, 0, 1, 0, 1, 0}, //F
-            {0, 1, 0, 1, 0, 1, 0, 1}, //E
-            {1, 0, 1, 0, 1, 0, 1, 0}, //D
-            {0, 1, 0, 1, 0, 4, 0, 1}, //C
-            {1, 0, 3, 0, 1, 0, 1, 0}, //B
-            {0, 1, 0, 1, 0, 1, 0, 1}};//A
-           //1  2  3  4  5  6  7  8
-    @Test
-    public void isGoodPlaceForKillingTest() throws Exception {
-        field.magicUpdate(DIFFERENT_KILLING_OPPORTUNITIES_FIELD);
-        analyzer.updateDataForAnalysis();
-        Cell whiteQueen = Cell.fromString("B, 3");
-        Cell blackQueen = Cell.fromString("G, 6");
-        field.forEachCell(cell -> {
-            if (!field.isFigure(cell)) {
-                System.out.println(cell);
-                System.out.print("For white queen: ");
-                System.out.println(analyzer.isGoodPlaceForKilling(whiteQueen, cell, true));
-                System.out.print("For black queen: ");
-                System.out.println(analyzer.isGoodPlaceForKilling(blackQueen, cell, false));
-                System.out.println();
-            }
-        });
     }
 }

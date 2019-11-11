@@ -2,10 +2,12 @@ package com.chess.entity;
 
 import com.chess.analytics.GameMath;
 import com.chess.analytics.FieldStateAnalyzer;
+import com.chess.util.ArraysUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -139,12 +141,23 @@ public class Field {
         field.set(this, newFieldCopy);
     }
 
-    // - public static methods
     public void forEachCell(Consumer<Cell> cellConsumer) {
         for (int line = 0; line < FIELD.length; line++) {
             for (int cell = 0; cell < FIELD[0].length; cell++) {
                 cellConsumer.accept(new Cell(line, cell));
             }
+        }
+    }
+
+    public <T> T runOnImaginingField(Cell that, Cell is, Supplier<T> command) {
+        if (isCellValid(that) && isCellValid(is)) {
+            byte[][] before = ArraysUtil.copy(FIELD);
+            insertCode(that.toIndexedCell(), toCode(is.toIndexedCell()));
+            T result = command.get();
+            ArraysUtil.reset(before, FIELD);
+            return result;
+        } else {
+            throw new RuntimeException(String.format("Failed to imaging that %s is %s.", that, is));
         }
     }
 
