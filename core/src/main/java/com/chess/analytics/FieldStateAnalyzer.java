@@ -26,6 +26,14 @@ public class FieldStateAnalyzer {
 
     // update analized data methods
     public void updateDataForAnalysis() {
+        updateFiguresData();
+        updateWhitesPossibleAttacks();
+        updateBlacksPossibleAttacks();
+        updateBlacksPossibleSteps();
+        updateWhitesPossibleSteps();
+    }
+
+    public void updateFiguresData() {
         Stream.of(whiteFigures, blackFigures, whiteQueens, blackQueens).forEach(List::clear);
         field.forEachCell(cell -> {
             if (field.isWhiteFigure(cell)) {
@@ -37,10 +45,6 @@ public class FieldStateAnalyzer {
             } else if (field.isBlackQueen(cell)) {
                 blackQueens.add(cell);
             } });
-        updateWhitesPossibleAttacks();
-        updateBlacksPossibleAttacks();
-        updateBlacksPossibleSteps();
-        updateWhitesPossibleSteps();
     }
 
     public void updateWhitesPossibleAttacks() {
@@ -219,15 +223,17 @@ public class FieldStateAnalyzer {
         Map<Cell, List<Cell>> possibleAttacksMap = new HashMap<>();
         if (field.isWhiteQueen(queen)) {
             List<Cell> blackFiguresCopy = new ArrayList<>(blackFigures);
+            blackFiguresCopy.addAll(blackQueens);
             blackFiguresCopy.remove(victimToIgnore);
             takeStockOfPossibleAttacks(queen, blackFiguresCopy, this::isReachableEnemyForWhiteQueen,
                     this::isAttackPossible, possibleAttacksMap);
         } else {
             List<Cell> whiteFiguresCopy = new ArrayList<>(whiteFigures);
+            whiteFiguresCopy.addAll(whiteQueens);
             whiteFiguresCopy.remove(victimToIgnore);
             takeStockOfPossibleAttacks(queen, whiteFiguresCopy, this::isReachableEnemyForBlackQueen,
                     this::isAttackPossible, possibleAttacksMap);
         }
-        return possibleAttacksMap.isEmpty();
+        return !possibleAttacksMap.isEmpty();
     }
 }

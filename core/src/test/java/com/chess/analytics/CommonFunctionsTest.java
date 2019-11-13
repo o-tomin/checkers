@@ -523,20 +523,23 @@ public class CommonFunctionsTest {
     }
 
     private static final byte[][] QUEEN_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD = {
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 4, 0, 5, 0, 1, 0},
-            {0, 1, 0, 3, 0, 1, 0, 1},
-            {1, 0, 5, 0, 4, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 5}
+           //1  2  3  4  5  6  7  8
+            {1, 0, 1, 0, 1, 0, 1, 0},  //H
+            {0, 1, 0, 1, 0, 1, 0, 1},  //G
+            {1, 0, 4, 0, 5, 0, 1, 0},  //F
+            {0, 1, 0, 3, 0, 1, 0, 1},  //E
+            {1, 0, 5, 0, 4, 0, 1, 0},  //D
+            {0, 1, 0, 1, 0, 1, 0, 1},  //C
+            {1, 0, 1, 0, 1, 0, 1, 0},  //B
+            {0, 1, 0, 1, 0, 1, 0, 5}   //A
+           //1  2  3  4  5  6  7  8
     };
 
     @Test
     public void takeStockOfKillingBasedStepsQueenKillerTest() throws Exception {
-        field.magicUpdate(QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT);
-        Cell whiteQueen = new Cell(3, 3);
+        field.magicUpdate(QUEEN_KILLER_CAN_STEP_ON_FILED_AFTER_VICTIM_FIELD);
+        analyzer.updateFiguresData();
+        Cell whiteQueen = Cell.fromString("E, 4");
         Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
         possibleAttacks.put(whiteQueen, List.of(
                 new Cell(2, 2),
@@ -567,19 +570,22 @@ public class CommonFunctionsTest {
     }
 
     private static final byte[][] QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT = {
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 5, 0, 1, 0, 1},
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 4, 0, 4, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 1, 0, 1, 0, 3, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1}
+           //1  2  3  4  5  6  7  8
+            {1, 0, 1, 0, 1, 0, 1, 0}, //H
+            {0, 1, 0, 5, 0, 1, 0, 1}, //G
+            {1, 0, 1, 0, 1, 0, 1, 0}, //F
+            {0, 1, 0, 1, 0, 1, 0, 1}, //E
+            {1, 0, 4, 0, 4, 0, 1, 0}, //D
+            {0, 1, 0, 1, 0, 1, 0, 1}, //C
+            {1, 0, 1, 0, 1, 0, 3, 0}, //B
+            {0, 1, 0, 1, 0, 1, 0, 1}  //A
+           //1  2  3  4  5  6  7  8
     };
-    //todo:
+
     @Test
     public void takeStockOfKillingBasedStepsQueenKillerStepToCorrectCellTest() throws Exception {
         field.magicUpdate(QUEEN_SHOULD_STEP_ON_GOOD_FOR_NEXT_KILLING_CELL_IF_NEXT_VICTIM_PRESENT);
+        analyzer.updateFiguresData();
         Cell whiteQueen = new Cell(6, 6);
         Map<Cell, List<Cell>> possibleAttacks = new HashMap<>();
         possibleAttacks.put(whiteQueen, List.of(
@@ -593,28 +599,11 @@ public class CommonFunctionsTest {
         List<Cell> stepsActual = possibleSteps.get(whiteQueen);
         List<Cell> stepsExpected = new ArrayList<>(){
             {
-                add(new Cell(0, 0));
-                add(new Cell(1, 1));
-                add(new Cell(0, 6));
-                add(new Cell(1, 5));
-                add(new Cell(6, 6));
-                add(new Cell(5, 5));
-                add(new Cell(6, 0));
-                add(new Cell(5, 1));
+                add(Cell.fromString("E, 4"));
+                add(Cell.fromString("F, 3"));
             }
         };
         //todo: need to fix compareTo in Cell class
         assertTrue(stepsActual.containsAll(stepsExpected));
     }
-
-    private static final byte[][] QUEEN_SHOULD_STEP_ON_ANY_CELL_AFTER_KILLING_IF_NO_NEW_VICTIMS_PRESENT = {
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 4, 0, 5, 0, 1, 0},
-            {0, 1, 0, 3, 0, 1, 0, 1},
-            {1, 0, 5, 0, 4, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 1},
-            {1, 0, 1, 0, 1, 0, 1, 0},
-            {0, 1, 0, 1, 0, 1, 0, 5}
-    };
 }

@@ -85,11 +85,17 @@ class CommonFunctions {
             } else {
                 Map<Cell, List<Cell>> victimsToPossibleStepsAfterKilling =  victims.stream()
                         .collect(Collectors.toMap(Function.identity(), victim -> field.calculateNextCells(killer, victim)));
+                int initialSize = steps.size();
                 victimsToPossibleStepsAfterKilling.forEach((victim, blackCells) ->
                     blackCells.stream()
                             .filter(blackCell -> isGoodForNextQueenAttack.test(killer, victim, blackCell))
-                            .forEach(steps::add)
-                );
+                            .forEach(steps::add));
+                if (initialSize == steps.size()) {
+                    victims.stream()
+                            .map(victim -> field.calculateNextCells(killer, victim))
+                            .flatMap(List::stream)
+                            .forEach(steps::add);
+                }
                 possibleSteps.put(killer, steps);
             }
         }

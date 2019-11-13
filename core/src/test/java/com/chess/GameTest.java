@@ -1218,7 +1218,7 @@ public class GameTest {
                                 {0, 1, 0, 1, 0, 1, 0, 1}}, //A
                                //1  2  3  4  5  6  7  8
                         Cell.fromStrings("H, 3", "C, 4"),
-                        Cell.fromStrings("F, 1", "F, 7"),
+                        Cell.fromStrings("F, 1", "B, 3"),
                         Cell.fromStrings("H, 5", "C, 4", "H, 3")
                 }
         };
